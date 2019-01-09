@@ -110,10 +110,16 @@ function countFiles(filemap) {
         .length;
 }
 
-function deleteDir(ftp, dir) {
+function deleteDir(ftp, dir, excludeDirs) {
     return ftp.list(dir).then(lst => {
         let dirNames = lst
-            .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
+            .filter(f => {
+                console.log('filter remove path:', path.posix.join(dir, f.name));
+                if (f.type == "d" && f.name != ".." && f.name != ".") {
+                    return excludeDirs.includes(path.posix.join(dir, f.name)) !== true;
+                }
+                return false;
+            })
             .map(f => path.posix.join(dir, f.name));
 
         let fnames = lst
