@@ -114,9 +114,8 @@ function deleteDir(ftp, dir, excludeDirs) {
     return ftp.list(dir).then(lst => {
         let dirNames = lst
             .filter(f => {
-                console.log('filter remove path:', path.posix.join(dir, f.name));
                 if (f.type == "d" && f.name != ".." && f.name != ".") {
-                    return excludeDirs.includes(path.posix.join(dir, f.name)) !== true;
+                    return excludeDirs.indexOf(path.posix.join(dir, f.name)) === -1;
                 }
                 return false;
             })
@@ -129,7 +128,7 @@ function deleteDir(ftp, dir, excludeDirs) {
         // delete sub-directories and then all files
         return Promise.mapSeries(dirNames, dirName => {
             // deletes everything in sub-directory, and then itself
-            return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
+            return deleteDir(ftp, dirName, excludeDirs).then(() => ftp.rmdir(dirName));
         }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
     });
 }
